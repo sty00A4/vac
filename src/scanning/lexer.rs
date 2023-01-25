@@ -2,7 +2,9 @@ use crate::*;
 use logos::Logos;
 use scanning::token::Token;
 
-pub fn lex(input: String) -> Result<Vec<Token>, String> {
+pub type LexerResult = Result<Vec<Token>, String>;
+
+pub fn lex(input: String) -> LexerResult {
     let mut lexer = Token::lexer(input.as_str());
     let mut tokens = vec![];
     loop {

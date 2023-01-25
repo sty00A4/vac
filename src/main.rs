@@ -1,6 +1,7 @@
 #![allow(unused)]
 extern crate logos;
 mod scanning;
+mod runtime;
 use std::{
     env,
     io::{stdin, stdout, Write}
@@ -15,16 +16,16 @@ macro_rules! error {
         Err(format!($msg))
     };
 }
+type Error = String;
 
-fn run(input: String) -> Result<(), String> {
+fn run(input: String) -> runtime::eval::EvalResult {
     let tokens = scanning::lexer::lex(input)?;
     // println!("{tokens:?}");
     let expr = scanning::parser::parse(tokens)?;
-    println!("{expr}");
-    Ok(())
+    // println!("{expr}");
+    Ok(runtime::eval::eval(&expr)?)
 }
 
-use scanning::*;
 fn main() {
     let Ok(program_path) = env::current_exe() else { eprintln!("can't resolve program path"); return };
     let args: Vec<String> = env::args().collect();
@@ -40,7 +41,11 @@ fn main() {
             stdout().flush();
             let Ok(len) = stdin().read_line(&mut input) else { break };
             match run(input) {
-                Ok(_) => {}
+                Ok(ret) => match ret {
+                    runtime::eval::Return::Expr(expr) => println!("{expr}"),
+                    runtime::eval::Return::Value(value) => println!("{value}"),
+                    runtime::eval::Return::None => {},
+                }
                 Err(e) => eprintln!("{e}")
             }
         }

@@ -2,6 +2,8 @@ use crate::*;
 use scanning::token::Token;
 use scanning::expr::Expr;
 
+pub type ParseResult = Result<Expr, Error>;
+
 pub struct Parser {
     tokens: Vec<Token>,
     idx: usize,
@@ -30,17 +32,17 @@ impl Parser {
         self.advance();
         Ok(())
     }
-    pub fn parse(&mut self) -> Result<Expr, String> {
+    pub fn parse(&mut self) -> ParseResult {
         let expr = self.expr()?;
         if let Some(token) = self.token() {
             return error!("cannot handel '{token}' at the end of input")
         }
         Ok(expr)
     }
-    pub fn expr(&mut self) -> Result<Expr, String> {
+    pub fn expr(&mut self) -> ParseResult {
         self.arith()
     }
-    pub fn arith(&mut self) -> Result<Expr, String> {
+    pub fn arith(&mut self) -> ParseResult {
         let mut left = self.term()?;
         while let Some(token) = self.token() {
             if ![Token::Add, Token::Sub, Token::AddSub].contains(&token) { break }
@@ -51,7 +53,7 @@ impl Parser {
         }
         Ok(left)
     }
-    pub fn term(&mut self) -> Result<Expr, String> {
+    pub fn term(&mut self) -> ParseResult {
         let mut left = self.pow()?;
         while let Some(token) = self.token() {
             if ![Token::Mult, Token::Div].contains(&token) { break }
@@ -62,7 +64,7 @@ impl Parser {
         }
         Ok(left)
     }
-    pub fn pow(&mut self) -> Result<Expr, String> {
+    pub fn pow(&mut self) -> ParseResult {
         let mut left = self.factor()?;
         while let Some(token) = self.token() {
             if token != &Token::Power { break }
@@ -73,33 +75,33 @@ impl Parser {
         }
         Ok(left)
     }
-    pub fn factor(&mut self) -> Result<Expr, String> {
+    pub fn factor(&mut self) -> ParseResult {
         if let Some(token) = self.token() {
             if [Token::Add, Token::Sub].contains(&token) {
                 let op = token.clone();
                 self.advance();
-                return Ok(Expr::UnaryOperation { node: Box::from(self.fraction()?), op })
+                return Ok(Expr::UnaryOperation { expr: Box::from(self.fraction()?), op })
             }
         }
         self.fraction()
     }
-    pub fn fraction(&mut self) -> Result<Expr, String> {
-        let node = self.percent()?;
+    pub fn fraction(&mut self) -> ParseResult {
+        let expr = self.percent()?;
         if self.token() == Some(&Token::Fraction) {
             self.advance();
-            return Ok(Expr::UnaryOperationRight { node: Box::new(node), op: Token::Fraction })
+            return Ok(Expr::UnaryOperationRight { expr: Box::new(expr), op: Token::Fraction })
         }
-        Ok(node)
+        Ok(expr)
     }
-    pub fn percent(&mut self) -> Result<Expr, String> {
-        let node = self.atom()?;
+    pub fn percent(&mut self) -> ParseResult {
+        let expr = self.atom()?;
         if self.token() == Some(&Token::Percent) {
             self.advance();
-            return Ok(Expr::UnaryOperationRight { node: Box::new(node), op: Token::Percent })
+            return Ok(Expr::UnaryOperationRight { expr: Box::new(expr), op: Token::Percent })
         }
-        Ok(node)
+        Ok(expr)
     }
-    pub fn atom(&mut self) -> Result<Expr, String> {
+    pub fn atom(&mut self) -> ParseResult {
         let res = match self.token() {
             Some(Token::EvalIn) => {
                 self.advance();
@@ -146,6 +148,6 @@ impl Parser {
     }
 }
 
-pub fn parse(tokens: Vec<Token>) -> Result<Expr, String> {
+pub fn parse(tokens: Vec<Token>) -> ParseResult {
     Parser::new(tokens).parse()
 }
