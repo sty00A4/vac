@@ -38,6 +38,8 @@ pub enum Token {
     #[token("...")]
     Continue,
 
+    #[token("+-")]
+    AddSub,
     #[token("+")]
     Add,
     #[token("-")]
@@ -91,6 +93,7 @@ impl Display for Token {
             Self::Percent => write!(f, "%"),
             Self::Pipe => write!(f, "|"),
             Self::Continue => write!(f, "..."),
+            Self::AddSub => write!(f, "+-"),
             Self::Add => write!(f, "+"),
             Self::Sub => write!(f, "-"),
             Self::Mult => write!(f, "*"),

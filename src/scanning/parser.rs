@@ -43,7 +43,7 @@ impl Parser {
     pub fn arith(&mut self) -> Result<Expr, String> {
         let mut left = self.term()?;
         while let Some(token) = self.token() {
-            if ![Token::Add, Token::Sub].contains(&token) { break }
+            if ![Token::Add, Token::Sub, Token::AddSub].contains(&token) { break }
             let op = token.clone();
             self.advance();
             let right = Box::new(self.term()?);
