@@ -78,10 +78,26 @@ impl Parser {
             if [Token::Add, Token::Sub].contains(&token) {
                 let op = token.clone();
                 self.advance();
-                return Ok(Expr::UnaryOperation { node: Box::from(self.factor()?), op })
+                return Ok(Expr::UnaryOperation { node: Box::from(self.fraction()?), op })
             }
         }
-        self.atom()
+        self.fraction()
+    }
+    pub fn fraction(&mut self) -> Result<Expr, String> {
+        let node = self.percent()?;
+        if self.token() == Some(&Token::Fraction) {
+            self.advance();
+            return Ok(Expr::UnaryOperationRight { node: Box::new(node), op: Token::Fraction })
+        }
+        Ok(node)
+    }
+    pub fn percent(&mut self) -> Result<Expr, String> {
+        let node = self.atom()?;
+        if self.token() == Some(&Token::Percent) {
+            self.advance();
+            return Ok(Expr::UnaryOperationRight { node: Box::new(node), op: Token::Percent })
+        }
+        Ok(node)
     }
     pub fn atom(&mut self) -> Result<Expr, String> {
         let res = match self.token() {
@@ -100,6 +116,12 @@ impl Parser {
                     return Ok(Expr::Vector(exprs))
                 }
                 Ok(expr)
+            }
+            Some(Token::Pipe) => {
+                self.advance();
+                let expr = Box::new(self.expr()?);
+                self.expect_token_advance(Token::Pipe)?;
+                Ok(Expr::Absolute(expr))
             }
             Some(Token::SetIn) => {
                 self.advance();
