@@ -12,13 +12,15 @@ macro_rules! error {
         Err(format!($msg, $($a),*))
     };
     ($msg:expr) => {
-        Err(String::from($msg))
+        Err(format!($msg))
     };
 }
 
 fn run(input: String) -> Result<(), String> {
     let tokens = scanning::lexer::lex(input)?;
-    println!("{tokens:?}");
+    // println!("{tokens:?}");
+    let expr = scanning::parser::parse(tokens)?;
+    println!("{expr}");
     Ok(())
 }
 
@@ -31,6 +33,7 @@ fn main() {
     if let Some(arg) = args.next() {
         todo!("execute file?")
     } else {
+        println!("This is the Vac shell.");
         loop {
             let mut input = String::new();
             print!("> ");
