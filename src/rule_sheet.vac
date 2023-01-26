@@ -1,0 +1,17 @@
+x + 0      ->  x
+0 + x      ->  x
+x - 0      ->  x
+0 - x      ->  -x
+x * 0      ->  0
+0 * x      ->  0
+x * 1      ->  x
+1 * x      ->  x
+x / 1      ->  x
+x / 0      ->  inf
+0 / x      ->  0
+a + -b     ->  a - b
+-a + b     ->  b - a
+x + a + b  ->  x + (a + b)
+x + a - b  ->  x + (a - b)
+x - a + b  ->  x - (a + b)
+x - a - b  ->  x - (a - b)

@@ -23,6 +23,7 @@ fn run(input: String) -> runtime::eval::EvalResult {
     // println!("{tokens:?}");
     let expr = scanning::parser::parse(tokens)?;
     // println!("{expr}");
+    // dbg!(expr.count());
     Ok(runtime::eval::eval(&expr)?)
 }
 

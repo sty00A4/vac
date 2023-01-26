@@ -19,7 +19,8 @@ pub fn binary_expr(left_left_expr: &Expr, left_right_expr: &Expr, left_op: &Toke
     };
     match (left_left_ret, left_right_ret) {
         (Return::Expr(left_expr), Return::Value(left_value)) => match (left_op, right_op) {
-            (Token::Add, Token::Add) | (Token::Add, Token::Sub) => match left_value.binary(right_value, right_op) {
+            (Token::Add, Token::Add) | (Token::Add, Token::Sub) |
+            (Token::Mult, Token::Mult) | (Token::Mult, Token::Div) => match left_value.binary(right_value, right_op) {
                 Ok(value) => Some(Ok(Return::Expr(Expr::BinaryOperation {
                     left: Box::new(left_expr), right: Box::new(value.expr()), op: left_op.clone()
                 }))),
@@ -27,6 +28,16 @@ pub fn binary_expr(left_left_expr: &Expr, left_right_expr: &Expr, left_op: &Toke
             }
             (Token::Sub, Token::Add) | (Token::Sub, Token::Sub) =>
             match right_value.unary(left_op) {
+                Ok(right_value) => match left_value.binary(&right_value, right_op) {
+                    Ok(value) => Some(Ok(Return::Expr(Expr::BinaryOperation {
+                        left: Box::new(left_expr), right: Box::new(value.expr()), op: left_op.clone()
+                    }))),
+                    Err(err) => Some(Err(err))
+                }
+                Err(err) => Some(Err(err))
+            }
+            (Token::Div, Token::Mult) | (Token::Div, Token::Div) =>
+            match Value::Number(1.).binary(right_value, left_op) {
                 Ok(right_value) => match left_value.binary(&right_value, right_op) {
                     Ok(value) => Some(Ok(Return::Expr(Expr::BinaryOperation {
                         left: Box::new(left_expr), right: Box::new(value.expr()), op: left_op.clone()

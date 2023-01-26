@@ -26,6 +26,16 @@ impl Expr {
             Self::Absolute(_) => "absolute expression",
         }
     }
+    pub fn count(&self) -> usize {
+        match self {
+            Self::ID(_) | Self::Int(_) | Self::Float(_) | Self::Continue => 1,
+            Self::BinaryOperation { left, right, op:_ } => 1 + left.count() + right.count(),
+            Self::UnaryOperation { expr, op:_ } | Self::UnaryOperationRight { expr, op:_ } |
+            Self::Absolute(expr) => 1 + expr.count(),
+            Self::Vector(vector) => 1 + vector.iter().map(|x| x.count()).collect::<Vec<usize>>().iter().sum::<usize>(),
+            Self::Set(set) => 1 + set.iter().map(|x| x.count()).collect::<Vec<usize>>().iter().sum::<usize>(),
+        }
+    }
 }
 impl Display for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
